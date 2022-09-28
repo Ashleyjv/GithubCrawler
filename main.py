@@ -33,11 +33,11 @@ ssl._create_default_https_context = ssl._create_unverified_context
 
 URL = "https://api.github.com/search/repositories?q="   # The basic URL to use the GitHub API
 QUERY = "language:python+youtube view bot"  # The personalized query (for instance, to get repositories from user 'rsain')
-SUB_QUERIES = ["+created%3A<%3D2021-03-31",
+SUB_QUERIES = ["+created%3A<%3D2022-03-31",
               "+created%3A>%3D2014-01-01"]  # Different sub-queries if you need to collect more than 1000 elements
 PARAMETERS = "&per_page=100"  # Additional parameters for the query (by default 100 items per page)
 DELAY_BETWEEN_QUERIES = 10  # The time to wait between different queries to GitHub (to avoid be banned)
-OUTPUT_FOLDER = "data"  # Folder where ZIP files will be stored
+OUTPUT_FOLDER = "data2/"  # Folder where ZIP files will be stored
 OUTPUT_CSV_FILE = "data/repositories.csv"  # Path to the CSV file generated as output
 
 
@@ -61,7 +61,7 @@ countOfRepositories = 0
 # Output CSV file which will contain information about repositories
 csv_file = open('OUTPUT_CSV_FILE', 'w')
 repositories = csv.writer(csv_file, delimiter=',')
-
+globalRepoList = {}
 # Run queries to get information in json format and download ZIP file for each repository
 for subquery in range(1, len(SUB_QUERIES) + 1):
     print("Processing subquery " + str(subquery) + " of " + str(len(SUB_QUERIES)) + " ...")
@@ -70,7 +70,7 @@ for subquery in range(1, len(SUB_QUERIES) + 1):
     data = json.loads(json.dumps(getUrl(url)))
     numberOfPages = int(math.ceil(data['total_count'] / 100.0))
     print("No. of pages = " + str(numberOfPages))
-    print("No. of pages = " + str(numberOfPages))
+    #print("No. of pages = " + str(numberOfPages))
 
     # Results are in different pages
     for currentPage in range(1, numberOfPages + 1):
@@ -82,6 +82,11 @@ for subquery in range(1, len(SUB_QUERIES) + 1):
             # Obtain user and repository names
             user = item['owner']['login']
             repository = item['name']
+            identifier  = "{}#{}".format(repository,user)
+            if identifier in globalRepoList:
+                continue
+            else:
+                globalRepoList[identifier] = 1
             # Download the zip file of the current project
             print("Downloading repository '%s' from user '%s' ..." % (repository, user))
             url = item['clone_url']
